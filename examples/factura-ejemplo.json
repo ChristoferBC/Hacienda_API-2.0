@@ -1,0 +1,78 @@
+{
+  "tipoDocumento": "01",
+  "codigoMoneda": "CRC",
+  "tipoCambio": 1,
+  "emisor": {
+    "nombre": "Empresa Ejemplo S.A.",
+    "identificacion": "312345678901",
+    "tipoIdentificacion": "02",
+    "correoElectronico": "facturacion@empresa.com",
+    "telefono": "2222-3333",
+    "codigoPais": "506",
+    "provincia": "San José",
+    "canton": "Central",
+    "distrito": "Carmen",
+    "direccion": "Avenida Central, Calle 1, Edificio ABC, Piso 2"
+  },
+  "receptor": {
+    "nombre": "Juan Pérez Gómez",
+    "identificacion": "123456789",
+    "tipoIdentificacion": "01",
+    "correoElectronico": "juan.perez@email.com",
+    "telefono": "8888-9999"
+  },
+  "detalleServicio": [
+    {
+      "numeroLinea": 1,
+      "codigo": "PROD001",
+      "descripcion": "Producto de ejemplo - Artículo de oficina",
+      "cantidad": 2,
+      "unidadMedida": "Unid",
+      "precioUnitario": 10000,
+      "montoTotal": 20000,
+      "descuento": 0,
+      "subtotal": 20000,
+      "impuesto": {
+        "codigo": "01",
+        "codigoTarifa": "08",
+        "tarifa": 13,
+        "monto": 2600
+      },
+      "montoTotalLinea": 22600
+    },
+    {
+      "numeroLinea": 2,
+      "codigo": "SERV001",
+      "descripcion": "Servicio de consultoría técnica",
+      "cantidad": 1,
+      "unidadMedida": "Hrs",
+      "precioUnitario": 15000,
+      "montoTotal": 15000,
+      "descuento": 1500,
+      "naturalezaDescuento": "Descuento por cliente frecuente",
+      "subtotal": 13500,
+      "impuesto": {
+        "codigo": "01",
+        "codigoTarifa": "08",
+        "tarifa": 13,
+        "monto": 1755
+      },
+      "montoTotalLinea": 15255
+    }
+  ],
+  "resumenFactura": {
+    "montoTotalServiciosGravados": 13500,
+    "montoTotalServiciosExentos": 0,
+    "montoTotalMercanciaGravada": 20000,
+    "montoTotalMercanciaExenta": 0,
+    "totalGravado": 33500,
+    "totalExento": 0,
+    "totalVenta": 35000,
+    "totalDescuentos": 1500,
+    "totalVentaNeta": 33500,
+    "totalImpuesto": 4355,
+    "totalComprobante": 37855
+  },
+  "condicionVenta": "01",
+  "observaciones": "Factura de ejemplo para testing del sistema de facturación electrónica. Esta factura es generada automáticamente para propósitos de demostración."
+}

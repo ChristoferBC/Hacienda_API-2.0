@@ -1,0 +1,632 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Hacienda API - Facturación Electrónica",
+    "description": "API REST para facturación electrónica de Costa Rica que simula el comportamiento del SDK oficial de ATV cuando no se tienen llaves criptográficas.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "ISC",
+      "url": "https://opensource.org/licenses/ISC"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor de desarrollo"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Información general de la API",
+        "tags": ["Sistema"],
+        "responses": {
+          "200": {
+            "description": "Información de la API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check del sistema",
+        "tags": ["Sistema"],
+        "responses": {
+          "200": {
+            "description": "Estado del sistema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/facturas/emitir": {
+      "post": {
+        "summary": "Emitir una nueva factura electrónica",
+        "tags": ["Facturas"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacturaInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Factura emitida exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmisionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos de factura inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/facturas/validar": {
+      "post": {
+        "summary": "Validar una factura o comprobante",
+        "tags": ["Facturas"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidacionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de la validación",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidacionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros de validación inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/facturas/enviar": {
+      "post": {
+        "summary": "Enviar factura a Hacienda (simulado)",
+        "tags": ["Facturas"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnvioInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Factura enviada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvioResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros de envío inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Factura no encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/facturas/status": {
+      "get": {
+        "summary": "Estado del sistema de facturación",
+        "tags": ["Sistema"],
+        "responses": {
+          "200": {
+            "description": "Estado del sistema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/facturas": {
+      "get": {
+        "summary": "Listar facturas",
+        "tags": ["Facturas"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filtrar por estado",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "pending", "sent"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "includeContent",
+            "in": "query",
+            "description": "Incluir contenido completo",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"],
+              "default": "false"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Límite de resultados",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Offset para paginación",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de facturas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaFacturasResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/facturas/{consecutivo}": {
+      "get": {
+        "summary": "Consultar factura por consecutivo",
+        "tags": ["Facturas"],
+        "parameters": [
+          {
+            "name": "consecutivo",
+            "in": "path",
+            "required": true,
+            "description": "Número consecutivo de 20 dígitos",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{20}$"
+            }
+          },
+          {
+            "name": "includeContent",
+            "in": "query",
+            "description": "Incluir contenido completo",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"],
+              "default": "true"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Datos de la factura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsultaResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Factura no encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar factura (solo desarrollo)",
+        "tags": ["Facturas"],
+        "parameters": [
+          {
+            "name": "consecutivo",
+            "in": "path",
+            "required": true,
+            "description": "Número consecutivo de 20 dígitos",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{20}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Factura eliminada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Operación no permitida en producción",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Factura no encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiInfo": {
+        "type": "object",
+        "properties": {
+          "message": {"type": "string"},
+          "version": {"type": "string"},
+          "mode": {"type": "string", "enum": ["SIMULATED", "REAL"]},
+          "documentation": {"type": "string"},
+          "healthCheck": {"type": "string"},
+          "apiBase": {"type": "string"}
+        }
+      },
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string"},
+          "timestamp": {"type": "string", "format": "date-time"},
+          "uptime": {"type": "number"},
+          "mode": {"type": "string"},
+          "nodeEnv": {"type": "string"},
+          "version": {"type": "string"}
+        }
+      },
+      "FacturaInput": {
+        "type": "object",
+        "required": ["emisor", "receptor", "detalleServicio", "resumenFactura"],
+        "properties": {
+          "tipoDocumento": {"type": "string", "enum": ["01", "02", "03", "04", "05", "06", "07", "08", "09"]},
+          "codigoMoneda": {"type": "string", "enum": ["CRC", "USD", "EUR"]},
+          "tipoCambio": {"type": "number", "minimum": 0.01},
+          "emisor": {"$ref": "#/components/schemas/Emisor"},
+          "receptor": {"$ref": "#/components/schemas/Receptor"},
+          "detalleServicio": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/DetalleItem"},
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "resumenFactura": {"$ref": "#/components/schemas/ResumenFactura"},
+          "condicionVenta": {"type": "string", "enum": ["01", "02", "03", "04", "05", "99"]},
+          "plazoCredito": {"type": "integer", "minimum": 0},
+          "observaciones": {"type": "string", "maxLength": 1000}
+        }
+      },
+      "Emisor": {
+        "type": "object",
+        "required": ["nombre", "identificacion"],
+        "properties": {
+          "nombre": {"type": "string", "maxLength": 100},
+          "identificacion": {"type": "string", "pattern": "^[0-9]{9,12}$"},
+          "tipoIdentificacion": {"type": "string", "enum": ["01", "02", "03", "04"]},
+          "correoElectronico": {"type": "string", "format": "email"},
+          "telefono": {"type": "string", "maxLength": 20},
+          "codigoPais": {"type": "string", "default": "506"},
+          "provincia": {"type": "string", "maxLength": 50},
+          "canton": {"type": "string", "maxLength": 50},
+          "distrito": {"type": "string", "maxLength": 50},
+          "direccion": {"type": "string", "maxLength": 200}
+        }
+      },
+      "Receptor": {
+        "type": "object",
+        "required": ["nombre", "identificacion"],
+        "properties": {
+          "nombre": {"type": "string", "maxLength": 100},
+          "identificacion": {"type": "string", "pattern": "^[0-9]{9,12}$"},
+          "tipoIdentificacion": {"type": "string", "enum": ["01", "02", "03", "04"]},
+          "correoElectronico": {"type": "string", "format": "email"},
+          "telefono": {"type": "string", "maxLength": 20}
+        }
+      },
+      "DetalleItem": {
+        "type": "object",
+        "required": ["numeroLinea", "descripcion", "cantidad", "precioUnitario", "montoTotal", "subtotal", "impuesto", "montoTotalLinea"],
+        "properties": {
+          "numeroLinea": {"type": "integer", "minimum": 1},
+          "codigo": {"type": "string", "maxLength": 20},
+          "descripcion": {"type": "string", "maxLength": 200},
+          "cantidad": {"type": "number", "minimum": 0.01, "multipleOf": 0.01},
+          "unidadMedida": {"type": "string", "enum": ["Unid", "Kg", "Lt", "Mt", "Hrs", "Otros"]},
+          "precioUnitario": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "montoTotal": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "descuento": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "naturalezaDescuento": {"type": "string", "maxLength": 80},
+          "subtotal": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "impuesto": {"$ref": "#/components/schemas/Impuesto"},
+          "montoTotalLinea": {"type": "number", "minimum": 0, "multipleOf": 0.01}
+        }
+      },
+      "Impuesto": {
+        "type": "object",
+        "required": ["codigo", "codigoTarifa", "tarifa", "monto"],
+        "properties": {
+          "codigo": {"type": "string", "enum": ["01", "02", "03", "04", "05", "06", "07", "08", "99"]},
+          "codigoTarifa": {"type": "string", "enum": ["01", "02", "03", "04", "05", "06", "07", "08"]},
+          "tarifa": {"type": "number", "minimum": 0, "maximum": 100, "multipleOf": 0.01},
+          "monto": {"type": "number", "minimum": 0, "multipleOf": 0.01}
+        }
+      },
+      "ResumenFactura": {
+        "type": "object",
+        "required": ["totalGravado", "totalVenta", "totalVentaNeta", "totalImpuesto", "totalComprobante"],
+        "properties": {
+          "montoTotalServiciosGravados": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "montoTotalServiciosExentos": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "montoTotalMercanciaGravada": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "montoTotalMercanciaExenta": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "totalGravado": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "totalExento": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "totalVenta": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "totalDescuentos": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "totalVentaNeta": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "totalImpuesto": {"type": "number", "minimum": 0, "multipleOf": 0.01},
+          "totalComprobante": {"type": "number", "minimum": 0, "multipleOf": 0.01}
+        }
+      },
+      "EmisionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "consecutivo": {"type": "string", "pattern": "^[0-9]{20}$"},
+          "clave": {"type": "string", "pattern": "^[0-9A-Za-z]{50}$"},
+          "estado": {"type": "string"},
+          "mode": {"type": "string", "enum": ["SIMULATED", "REAL"]},
+          "timestamp": {"type": "string", "format": "date-time"},
+          "archivos": {
+            "type": "object",
+            "properties": {
+              "json": {"type": "string"},
+              "xml": {"type": "string"}
+            }
+          },
+          "metadata": {"type": "object"}
+        }
+      },
+      "ValidacionInput": {
+        "type": "object",
+        "properties": {
+          "clave": {"type": "string", "pattern": "^[0-9A-Za-z]{50}$"},
+          "consecutivo": {"type": "string", "pattern": "^[0-9]{20}$"},
+          "payload": {"$ref": "#/components/schemas/FacturaInput"}
+        }
+      },
+      "ValidacionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "clave": {"type": "string"},
+          "consecutivo": {"type": "string"},
+          "valid": {"type": "boolean"},
+          "mode": {"type": "string"},
+          "timestamp": {"type": "string", "format": "date-time"},
+          "hash": {"type": "string"},
+          "mensajes": {"type": "array", "items": {"type": "string"}},
+          "estado": {"type": "string"}
+        }
+      },
+      "EnvioInput": {
+        "type": "object",
+        "properties": {
+          "clave": {"type": "string", "pattern": "^[0-9A-Za-z]{50}$"},
+          "consecutivo": {"type": "string", "pattern": "^[0-9]{20}$"}
+        }
+      },
+      "EnvioResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "clave": {"type": "string"},
+          "consecutivo": {"type": "string"},
+          "estado": {"type": "string"},
+          "mode": {"type": "string"},
+          "timestamp": {"type": "string", "format": "date-time"},
+          "numeroComprobante": {"type": "string"},
+          "respuestaHacienda": {
+            "type": "object",
+            "properties": {
+              "codigo": {"type": "string"},
+              "mensaje": {"type": "string"},
+              "fecha": {"type": "string", "format": "date-time"}
+            }
+          },
+          "archivosMarcados": {"type": "integer"}
+        }
+      },
+      "SystemStatus": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "timestamp": {"type": "string", "format": "date-time"},
+          "sistema": {
+            "type": "object",
+            "properties": {
+              "modo": {"type": "string"},
+              "adaptadorInicializado": {"type": "boolean"},
+              "sdk": {"type": "string"}
+            }
+          },
+          "storage": {"type": "object"},
+          "config": {"type": "object"}
+        }
+      },
+      "ListaFacturasResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "total": {"type": "integer"},
+              "limit": {"type": "integer"},
+              "offset": {"type": "integer"},
+              "hasMore": {"type": "boolean"}
+            }
+          },
+          "filters": {"type": "object"},
+          "stats": {"type": "object"},
+          "facturas": {"type": "array", "items": {"type": "object"}}
+        }
+      },
+      "ConsultaResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "consecutivo": {"type": "string"},
+          "encontrada": {"type": "boolean"},
+          "metadata": {"type": "object"},
+          "estadoATV": {"type": "object"},
+          "contenido": {
+            "type": "object",
+            "properties": {
+              "json": {"type": "object"},
+              "xml": {"type": "string"}
+            }
+          },
+          "archivos": {"type": "object"}
+        }
+      },
+      "DeleteResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "consecutivo": {"type": "string"},
+          "archivosEliminados": {"type": "integer"},
+          "errores": {"type": "integer"},
+          "detalles": {"type": "object"}
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean", "example": false},
+          "error": {"type": "string"},
+          "message": {"type": "string"},
+          "timestamp": {"type": "string", "format": "date-time"},
+          "details": {"type": "object"}
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sistema",
+      "description": "Endpoints de información y estado del sistema"
+    },
+    {
+      "name": "Facturas",
+      "description": "Operaciones de facturación electrónica"
+    }
+  ]
+}

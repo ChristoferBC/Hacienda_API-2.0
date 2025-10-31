@@ -1,0 +1,438 @@
+{
+  "info": {
+    "name": "Hacienda API - Facturación Electrónica CR",
+    "description": "Colección completa para probar la API REST de facturación electrónica de Costa Rica.\n\n**Instrucciones:**\n1. Asegúrate de que el servidor esté funcionando en `http://localhost:3000`\n2. Ejecuta `npm run dev` en el directorio del proyecto\n3. Usa las variables de entorno configuradas\n4. Ejecuta las requests en orden para ver el flujo completo\n\n**Variables disponibles:**\n- `baseUrl`: URL base del servidor\n- `consecutivo`: Se actualiza automáticamente después de emitir una factura\n- `clave`: Se actualiza automáticamente después de emitir una factura",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "12345678-1234-1234-1234-123456789012",
+    "_exporter_id": "1234567"
+  },
+  "item": [
+    {
+      "name": "🏠 Sistema",
+      "item": [
+        {
+          "name": "Información de la API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "Obtiene información general de la API, incluyendo versión, modo de operación y enlaces a documentación."
+          },
+          "response": []
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica que el servidor esté funcionando correctamente."
+          },
+          "response": []
+        },
+        {
+          "name": "Estado del Sistema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "status"]
+            },
+            "description": "Obtiene información detallada del estado del sistema de facturación."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para verificar el estado y configuración del sistema."
+    },
+    {
+      "name": "📄 Gestión de Facturas",
+      "item": [
+        {
+          "name": "Emitir Factura",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Guardar consecutivo y clave para usar en otras requests",
+                  "if (pm.response.code === 201) {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.consecutivo) {",
+                  "        pm.environment.set('consecutivo', responseJson.consecutivo);",
+                  "        console.log('Consecutivo guardado:', responseJson.consecutivo);",
+                  "    }",
+                  "    if (responseJson.clave) {",
+                  "        pm.environment.set('clave', responseJson.clave);",
+                  "        console.log('Clave guardada:', responseJson.clave);",
+                  "    }",
+                  "}",
+                  "",
+                  "// Verificar respuesta exitosa",
+                  "pm.test('Factura emitida exitosamente', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Respuesta contiene consecutivo', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('consecutivo');",
+                  "    pm.expect(responseJson.consecutivo).to.match(/^[0-9]{20}$/);",
+                  "});",
+                  "",
+                  "pm.test('Respuesta contiene clave', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('clave');",
+                  "    pm.expect(responseJson.clave).to.match(/^[0-9A-Za-z]{50}$/);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoDocumento\": \"01\",\n  \"codigoMoneda\": \"CRC\",\n  \"tipoCambio\": 1.0,\n  \"emisor\": {\n    \"nombre\": \"EMPRESA DE PRUEBA POSTMAN LTDA\",\n    \"identificacion\": \"312345678901\",\n    \"tipoIdentificacion\": \"02\",\n    \"correoElectronico\": \"facturacion@empresa-postman.cr\",\n    \"telefono\": \"22334455\",\n    \"codigoPais\": \"506\",\n    \"provincia\": \"San José\",\n    \"canton\": \"Escazú\",\n    \"distrito\": \"Escazú\",\n    \"direccion\": \"Del semáforo 200m norte, edificio azul\"\n  },\n  \"receptor\": {\n    \"nombre\": \"CLIENTE POSTMAN SA\",\n    \"identificacion\": \"398765432101\",\n    \"tipoIdentificacion\": \"02\",\n    \"correoElectronico\": \"cliente@postman-test.com\",\n    \"telefono\": \"88776655\"\n  },\n  \"detalleServicio\": [\n    {\n      \"numeroLinea\": 1,\n      \"codigo\": \"POSTMAN001\",\n      \"descripcion\": \"Servicio de consultoría tecnológica - Prueba Postman\",\n      \"cantidad\": 8.0,\n      \"unidadMedida\": \"Hrs\",\n      \"precioUnitario\": 12500.0,\n      \"montoTotal\": 100000.0,\n      \"descuento\": 0.0,\n      \"subtotal\": 100000.0,\n      \"impuesto\": {\n        \"codigo\": \"01\",\n        \"codigoTarifa\": \"08\",\n        \"tarifa\": 13.0,\n        \"monto\": 13000.0\n      },\n      \"montoTotalLinea\": 113000.0\n    },\n    {\n      \"numeroLinea\": 2,\n      \"codigo\": \"POSTMAN002\",\n      \"descripcion\": \"Licencia de software - Mensual\",\n      \"cantidad\": 1.0,\n      \"unidadMedida\": \"Unid\",\n      \"precioUnitario\": 50000.0,\n      \"montoTotal\": 50000.0,\n      \"descuento\": 5000.0,\n      \"naturalezaDescuento\": \"Descuento por cliente frecuente\",\n      \"subtotal\": 45000.0,\n      \"impuesto\": {\n        \"codigo\": \"01\",\n        \"codigoTarifa\": \"08\",\n        \"tarifa\": 13.0,\n        \"monto\": 5850.0\n      },\n      \"montoTotalLinea\": 50850.0\n    }\n  ],\n  \"resumenFactura\": {\n    \"montoTotalServiciosGravados\": 145000.0,\n    \"montoTotalServiciosExentos\": 0.0,\n    \"montoTotalMercanciaGravada\": 0.0,\n    \"montoTotalMercanciaExenta\": 0.0,\n    \"totalGravado\": 145000.0,\n    \"totalExento\": 0.0,\n    \"totalVenta\": 150000.0,\n    \"totalDescuentos\": 5000.0,\n    \"totalVentaNeta\": 145000.0,\n    \"totalImpuesto\": 18850.0,\n    \"totalComprobante\": 163850.0\n  },\n  \"condicionVenta\": \"01\",\n  \"plazoCredito\": 0,\n  \"observaciones\": \"Factura de prueba generada desde Postman - API Testing\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/emitir",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "emitir"]
+            },
+            "description": "Emite una nueva factura electrónica. Guarda automáticamente el consecutivo y la clave en las variables de entorno para usar en otras requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Factura",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consecutivo\": \"{{consecutivo}}\",\n  \"clave\": \"{{clave}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/validar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "validar"]
+            },
+            "description": "Valida una factura usando el consecutivo y clave obtenidos de la emisión anterior."
+          },
+          "response": []
+        },
+        {
+          "name": "Enviar Factura a Hacienda",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consecutivo\": \"{{consecutivo}}\",\n  \"clave\": \"{{clave}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/enviar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "enviar"]
+            },
+            "description": "Simula el envío de la factura a Hacienda (en modo SIMULATED)."
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar Factura por Consecutivo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/{{consecutivo}}?includeContent=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "{{consecutivo}}"],
+              "query": [
+                {
+                  "key": "includeContent",
+                  "value": "true",
+                  "description": "Incluir contenido completo de la factura"
+                }
+              ]
+            },
+            "description": "Consulta una factura específica por su número consecutivo, incluyendo todo el contenido."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Todas las Facturas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas?status=all&includeContent=false&limit=10&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "all",
+                  "description": "Filtrar por estado: all, pending, sent"
+                },
+                {
+                  "key": "includeContent",
+                  "value": "false",
+                  "description": "Incluir contenido completo"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Número máximo de resultados"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Offset para paginación"
+                }
+              ]
+            },
+            "description": "Lista todas las facturas con opciones de filtrado y paginación."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Facturas Pendientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas?status=pending&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Solo facturas pendientes de envío"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Lista solo las facturas que están pendientes de envío a Hacienda."
+          },
+          "response": []
+        }
+      ],
+      "description": "Operaciones principales de gestión de facturas electrónicas."
+    },
+    {
+      "name": "🧪 Pruebas y Validaciones",
+      "item": [
+        {
+          "name": "Validar Payload Completo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payload\": {\n    \"tipoDocumento\": \"01\",\n    \"codigoMoneda\": \"CRC\",\n    \"tipoCambio\": 1.0,\n    \"emisor\": {\n      \"nombre\": \"VALIDACION TEST SA\",\n      \"identificacion\": \"312345678901\",\n      \"tipoIdentificacion\": \"02\",\n      \"correoElectronico\": \"test@validacion.cr\"\n    },\n    \"receptor\": {\n      \"nombre\": \"RECEPTOR TEST\",\n      \"identificacion\": \"398765432101\",\n      \"tipoIdentificacion\": \"02\"\n    },\n    \"detalleServicio\": [\n      {\n        \"numeroLinea\": 1,\n        \"descripcion\": \"Producto de prueba\",\n        \"cantidad\": 1.0,\n        \"precioUnitario\": 1000.0,\n        \"montoTotal\": 1000.0,\n        \"subtotal\": 1000.0,\n        \"impuesto\": {\n          \"codigo\": \"01\",\n          \"codigoTarifa\": \"08\",\n          \"tarifa\": 13.0,\n          \"monto\": 130.0\n        },\n        \"montoTotalLinea\": 1130.0\n      }\n    ],\n    \"resumenFactura\": {\n      \"totalGravado\": 1000.0,\n      \"totalVenta\": 1000.0,\n      \"totalVentaNeta\": 1000.0,\n      \"totalImpuesto\": 130.0,\n      \"totalComprobante\": 1130.0\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/validar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "validar"]
+            },
+            "description": "Valida un payload de factura completo sin emitirla."
+          },
+          "response": []
+        },
+        {
+          "name": "Prueba de Error - Datos Inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoDocumento\": \"99\",\n  \"codigoMoneda\": \"INVALID\",\n  \"emisor\": {\n    \"nombre\": \"\",\n    \"identificacion\": \"123\"\n  },\n  \"receptor\": {\n    \"nombre\": \"Test\"\n  },\n  \"detalleServicio\": [],\n  \"resumenFactura\": {\n    \"totalComprobante\": -100\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/emitir",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "emitir"]
+            },
+            "description": "Prueba cómo maneja la API datos inválidos. Debería retornar errores de validación detallados."
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar Factura Inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/12345678901234567890",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "12345678901234567890"]
+            },
+            "description": "Prueba la consulta de una factura que no existe."
+          },
+          "response": []
+        }
+      ],
+      "description": "Requests para probar validaciones y manejo de errores."
+    },
+    {
+      "name": "🛠️ Desarrollo (Solo Development)",
+      "item": [
+        {
+          "name": "Eliminar Factura (Solo Dev)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/{{consecutivo}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "{{consecutivo}}"]
+            },
+            "description": "Elimina una factura (solo disponible en modo desarrollo). Útil para limpiar datos de prueba."
+          },
+          "response": []
+        },
+        {
+          "name": "Factura Rápida de Prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.consecutivo) {",
+                  "        pm.environment.set('consecutivo', responseJson.consecutivo);",
+                  "        console.log('Consecutivo de prueba:', responseJson.consecutivo);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoDocumento\": \"01\",\n  \"codigoMoneda\": \"CRC\",\n  \"emisor\": {\n    \"nombre\": \"PRUEBA RAPIDA SA\",\n    \"identificacion\": \"312345678901\",\n    \"tipoIdentificacion\": \"02\"\n  },\n  \"receptor\": {\n    \"nombre\": \"CLIENTE RAPIDO\",\n    \"identificacion\": \"398765432101\",\n    \"tipoIdentificacion\": \"02\"\n  },\n  \"detalleServicio\": [\n    {\n      \"numeroLinea\": 1,\n      \"descripcion\": \"Prueba rápida\",\n      \"cantidad\": 1.0,\n      \"precioUnitario\": 1000.0,\n      \"montoTotal\": 1000.0,\n      \"subtotal\": 1000.0,\n      \"impuesto\": {\n        \"codigo\": \"01\",\n        \"codigoTarifa\": \"08\",\n        \"tarifa\": 13.0,\n        \"monto\": 130.0\n      },\n      \"montoTotalLinea\": 1130.0\n    }\n  ],\n  \"resumenFactura\": {\n    \"totalGravado\": 1000.0,\n    \"totalVenta\": 1000.0,\n    \"totalVentaNeta\": 1000.0,\n    \"totalImpuesto\": 130.0,\n    \"totalComprobante\": 1130.0\n  },\n  \"observaciones\": \"Factura de prueba rápida - {{ $timestamp }}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/emitir",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "emitir"]
+            },
+            "description": "Crea una factura simple para pruebas rápidas con datos mínimos válidos."
+          },
+          "response": []
+        }
+      ],
+      "description": "Herramientas de desarrollo y testing."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Script que se ejecuta antes de cada request",
+          "console.log('Ejecutando request a:', pm.request.url);",
+          "",
+          "// Verificar que las variables estén configuradas",
+          "if (!pm.environment.get('baseUrl')) {",
+          "    console.warn('Variable baseUrl no configurada. Usando valor por defecto.');",
+          "    pm.environment.set('baseUrl', 'http://localhost:3000');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Script que se ejecuta después de cada request",
+          "console.log('Status:', pm.response.status);",
+          "console.log('Time:', pm.response.responseTime + 'ms');",
+          "",
+          "// Tests globales",
+          "pm.test('Response time is less than 5000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "pm.test('Response has correct Content-Type', function () {",
+          "    if (pm.response.headers.get('Content-Type')) {",
+          "        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "    }",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "consecutivo",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clave",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
