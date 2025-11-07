@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const config = require('./config');
 const logger = require('./utils/logger');
 const facturaRoutes = require('./routes/facturas');
+const englishInvoiceRoutes = require('./routes/englishInvoices');
 const atvAdapter = require('./services/atvAdapter');
 
 /**
@@ -114,22 +115,39 @@ app.get('/info', (req, res) => {
       'GET /api/facturas',
       'GET /api/facturas/:consecutivo',
       'DELETE /api/facturas/:consecutivo (solo desarrollo)',
+      'POST /api/en/invoices/issue',
+      'POST /api/en/invoices/validate',
+      'POST /api/en/invoices/send',
+      'GET /api/en/invoices',
+      'GET /api/en/invoices/:consecutive',
+      'GET /api/en/invoices/health/check',
     ],
   });
 });
 
 // Rutas de la API
 app.use('/api/facturas', facturaRoutes);
+app.use('/api/en/invoices', englishInvoiceRoutes);
 
 // Ruta por defecto para la raíz
 app.get('/', (req, res) => {
   res.json({
     message: 'API de Facturación Electrónica - Hacienda Costa Rica',
+    description: 'Electronic Invoice API - Costa Rica Tax Administration',
     version: '1.0.0',
     mode: config.mode,
     documentation: '/info',
     healthCheck: '/health',
-    apiBase: '/api/facturas',
+    languages: {
+      spanish: '/api/facturas',
+      english: '/api/en/invoices',
+    },
+    features: [
+      'bilingual_support',
+      'electronic_invoicing',
+      'tax_administration_integration',
+      'real_time_validation',
+    ],
   });
 });
 
@@ -155,6 +173,12 @@ app.use('*', (req, res) => {
       'GET /api/facturas/status',
       'GET /api/facturas',
       'GET /api/facturas/:consecutivo',
+      'POST /api/en/invoices/issue',
+      'POST /api/en/invoices/validate',
+      'POST /api/en/invoices/send',
+      'GET /api/en/invoices',
+      'GET /api/en/invoices/:consecutive',
+      'GET /api/en/invoices/health/check',
     ],
   });
 });

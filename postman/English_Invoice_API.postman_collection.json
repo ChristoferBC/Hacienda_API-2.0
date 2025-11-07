@@ -1,0 +1,760 @@
+{
+	"info": {
+		"_postman_id": "e8b4c5f2-1a3d-4e5f-9c7b-8d6f5e4a3b2c",
+		"name": "English Invoice API - Hacienda Costa Rica",
+		"description": "Complete collection for testing the English Invoice API endpoints. This API provides bilingual support for Costa Rica's electronic invoicing system.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success field\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Service is healthy\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql('healthy');",
+							"    pm.expect(jsonData.language).to.eql('english');",
+							"});",
+							"",
+							"pm.test(\"All endpoints are listed\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.endpoints).to.be.an('array');",
+							"    pm.expect(jsonData.endpoints.length).to.be.greaterThan(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/health/check",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"health",
+						"check"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Issue Basic Service Invoice",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Invoice issued successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData).to.have.property('consecutive');",
+							"    pm.expect(jsonData).to.have.property('key');",
+							"    ",
+							"    // Save consecutive for later use",
+							"    pm.environment.set('test_consecutive', jsonData.consecutive);",
+							"    pm.environment.set('test_key', jsonData.key);",
+							"});",
+							"",
+							"pm.test(\"Response contains required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status');",
+							"    pm.expect(jsonData).to.have.property('mode');",
+							"    pm.expect(jsonData).to.have.property('timestamp');",
+							"    pm.expect(jsonData.metadata.language).to.eql('english');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"documentType\": \"01\",\n  \"currencyCode\": \"USD\",\n  \"exchangeRate\": 650.00,\n  \"issuer\": {\n    \"name\": \"Tech Solutions International LLC\",\n    \"identification\": \"123456789\",\n    \"identificationType\": \"02\",\n    \"email\": \"billing@techsolutions.com\",\n    \"phone\": \"+1-555-0100\",\n    \"countryCode\": \"US\",\n    \"province\": \"01\",\n    \"canton\": \"01\",\n    \"district\": \"01\",\n    \"address\": \"456 Tech Park Drive, Suite 200\"\n  },\n  \"receiver\": {\n    \"name\": \"Empresa Costarricense de Tecnología SA\",\n    \"identification\": \"310123456789\",\n    \"identificationType\": \"02\",\n    \"email\": \"compras@empresacr.com\",\n    \"phone\": \"+506-2100-5000\"\n  },\n  \"serviceDetail\": [\n    {\n      \"lineNumber\": 1,\n      \"code\": \"CONS-DEV-001\",\n      \"description\": \"Software Development Consulting Services\",\n      \"quantity\": 40,\n      \"unitOfMeasure\": \"Hrs\",\n      \"unitPrice\": 75.00,\n      \"totalAmount\": 3000.00,\n      \"discount\": 0.00,\n      \"discountNature\": \"No discount applied\",\n      \"subtotal\": 3000.00,\n      \"tax\": {\n        \"code\": \"01\",\n        \"rateCode\": \"08\",\n        \"rate\": 13.00,\n        \"amount\": 390.00\n      },\n      \"totalLineAmount\": 3390.00\n    }\n  ],\n  \"invoiceSummary\": {\n    \"totalTaxableServices\": 3000.00,\n    \"totalExemptServices\": 0.00,\n    \"totalTaxableGoods\": 0.00,\n    \"totalExemptGoods\": 0.00,\n    \"totalTaxable\": 3000.00,\n    \"totalExempt\": 0.00,\n    \"totalSale\": 3000.00,\n    \"totalDiscounts\": 0.00,\n    \"totalNetSale\": 3000.00,\n    \"totalTax\": 390.00,\n    \"totalInvoice\": 3390.00\n  },\n  \"saleCondition\": \"02\",\n  \"creditTerm\": \"30\",\n  \"observations\": \"Software development services for Q4 2025. Net 30 days payment terms.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/issue",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"issue"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Issue Product Invoice with Discount",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Product invoice issued successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData).to.have.property('consecutive');",
+							"    ",
+							"    // Save for later validation",
+							"    pm.environment.set('product_consecutive', jsonData.consecutive);",
+							"    pm.environment.set('product_key', jsonData.key);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"documentType\": \"01\",\n  \"currencyCode\": \"USD\",\n  \"exchangeRate\": 650.00,\n  \"issuer\": {\n    \"name\": \"Global Hardware Distributors Inc\",\n    \"identification\": \"987654321\",\n    \"identificationType\": \"02\",\n    \"email\": \"sales@globalhardware.com\",\n    \"phone\": \"+1-555-0200\",\n    \"countryCode\": \"US\",\n    \"province\": \"01\",\n    \"canton\": \"01\",\n    \"district\": \"01\",\n    \"address\": \"789 Industrial Boulevard\"\n  },\n  \"receiver\": {\n    \"name\": \"Banco Nacional de Costa Rica\",\n    \"identification\": \"400000000001\",\n    \"identificationType\": \"02\",\n    \"email\": \"compras@bncr.fi.cr\",\n    \"phone\": \"+506-2212-2000\"\n  },\n  \"serviceDetail\": [\n    {\n      \"lineNumber\": 1,\n      \"code\": \"LAPTOP-HP-001\",\n      \"description\": \"HP EliteBook 840 G9 - Business Laptop\",\n      \"quantity\": 5,\n      \"unitOfMeasure\": \"Unit\",\n      \"unitPrice\": 1200.00,\n      \"totalAmount\": 6000.00,\n      \"discount\": 300.00,\n      \"discountNature\": \"Volume discount - 5+ units\",\n      \"subtotal\": 5700.00,\n      \"tax\": {\n        \"code\": \"01\",\n        \"rateCode\": \"08\",\n        \"rate\": 13.00,\n        \"amount\": 741.00\n      },\n      \"totalLineAmount\": 6441.00\n    },\n    {\n      \"lineNumber\": 2,\n      \"code\": \"MOUSE-LOG-001\",\n      \"description\": \"Logitech MX Master 3 Wireless Mouse\",\n      \"quantity\": 5,\n      \"unitOfMeasure\": \"Unit\",\n      \"unitPrice\": 80.00,\n      \"totalAmount\": 400.00,\n      \"discount\": 0.00,\n      \"discountNature\": \"No discount applied\",\n      \"subtotal\": 400.00,\n      \"tax\": {\n        \"code\": \"01\",\n        \"rateCode\": \"08\",\n        \"rate\": 13.00,\n        \"amount\": 52.00\n      },\n      \"totalLineAmount\": 452.00\n    }\n  ],\n  \"invoiceSummary\": {\n    \"totalTaxableServices\": 0.00,\n    \"totalExemptServices\": 0.00,\n    \"totalTaxableGoods\": 6100.00,\n    \"totalExemptGoods\": 0.00,\n    \"totalTaxable\": 6100.00,\n    \"totalExempt\": 0.00,\n    \"totalSale\": 6400.00,\n    \"totalDiscounts\": 300.00,\n    \"totalNetSale\": 6100.00,\n    \"totalTax\": 793.00,\n    \"totalInvoice\": 6893.00\n  },\n  \"saleCondition\": \"01\",\n  \"creditTerm\": \"0\",\n  \"observations\": \"Hardware purchase for IT department. Payment by wire transfer.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/issue",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"issue"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Issue Mixed Invoice (Products + Services)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"documentType\": \"01\",\n  \"currencyCode\": \"EUR\",\n  \"exchangeRate\": 720.00,\n  \"issuer\": {\n    \"name\": \"Complete Business Solutions Europe GmbH\",\n    \"identification\": \"DE555666777\",\n    \"identificationType\": \"04\",\n    \"email\": \"export@cbseurope.com\",\n    \"phone\": \"+49-30-12345678\",\n    \"countryCode\": \"DE\",\n    \"province\": \"01\",\n    \"canton\": \"01\",\n    \"district\": \"01\",\n    \"address\": \"Unter den Linden 15, 10117 Berlin\"\n  },\n  \"receiver\": {\n    \"name\": \"Instituto Costarricense de Electricidad\",\n    \"identification\": \"400000000002\",\n    \"identificationType\": \"02\",\n    \"email\": \"compras@ice.go.cr\",\n    \"phone\": \"+506-2000-7000\"\n  },\n  \"serviceDetail\": [\n    {\n      \"lineNumber\": 1,\n      \"code\": \"SW-LICENSE-ENT\",\n      \"description\": \"Enterprise Software License - 1 Year\",\n      \"quantity\": 1,\n      \"unitOfMeasure\": \"Unit\",\n      \"unitPrice\": 5000.00,\n      \"totalAmount\": 5000.00,\n      \"discount\": 500.00,\n      \"discountNature\": \"New customer discount\",\n      \"subtotal\": 4500.00,\n      \"tax\": {\n        \"code\": \"01\",\n        \"rateCode\": \"08\",\n        \"rate\": 13.00,\n        \"amount\": 585.00\n      },\n      \"totalLineAmount\": 5085.00\n    },\n    {\n      \"lineNumber\": 2,\n      \"code\": \"TRAINING-3DAY\",\n      \"description\": \"Staff Training Workshop - 3 Days\",\n      \"quantity\": 24,\n      \"unitOfMeasure\": \"Hrs\",\n      \"unitPrice\": 125.00,\n      \"totalAmount\": 3000.00,\n      \"discount\": 0.00,\n      \"discountNature\": \"No discount applied\",\n      \"subtotal\": 3000.00,\n      \"tax\": {\n        \"code\": \"01\",\n        \"rateCode\": \"08\",\n        \"rate\": 13.00,\n        \"amount\": 390.00\n      },\n      \"totalLineAmount\": 3390.00\n    },\n    {\n      \"lineNumber\": 3,\n      \"code\": \"SUPPORT-ANNUAL\",\n      \"description\": \"Technical Support - Annual Contract\",\n      \"quantity\": 12,\n      \"unitOfMeasure\": \"Mt\",\n      \"unitPrice\": 200.00,\n      \"totalAmount\": 2400.00,\n      \"discount\": 240.00,\n      \"discountNature\": \"Annual payment discount\",\n      \"subtotal\": 2160.00,\n      \"tax\": {\n        \"code\": \"01\",\n        \"rateCode\": \"08\",\n        \"rate\": 13.00,\n        \"amount\": 280.80\n      },\n      \"totalLineAmount\": 2440.80\n    }\n  ],\n  \"invoiceSummary\": {\n    \"totalTaxableServices\": 5160.00,\n    \"totalExemptServices\": 0.00,\n    \"totalTaxableGoods\": 4500.00,\n    \"totalExemptGoods\": 0.00,\n    \"totalTaxable\": 9660.00,\n    \"totalExempt\": 0.00,\n    \"totalSale\": 10400.00,\n    \"totalDiscounts\": 740.00,\n    \"totalNetSale\": 9660.00,\n    \"totalTax\": 1255.80,\n    \"totalInvoice\": 10915.80\n  },\n  \"saleCondition\": \"02\",\n  \"creditTerm\": \"45\",\n  \"observations\": \"Complete solution package including software, training, and support. Payment terms: Net 45 days.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/issue",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"issue"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validate Invoice by Key",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Validation successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.method).to.eql('key_consecutive');",
+							"    pm.expect(jsonData.metadata.language).to.eql('english');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"key\": \"{{test_key}}\",\n  \"consecutive\": \"{{test_consecutive}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/validate",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"validate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validate Invoice by Payload",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Payload validation successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.method).to.eql('payload');",
+							"    pm.expect(jsonData).to.have.property('structuralValidation');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"payload\": {\n    \"documentType\": \"01\",\n    \"currencyCode\": \"USD\",\n    \"issuer\": {\n      \"name\": \"Test Validation Company\",\n      \"identification\": \"123456789\",\n      \"identificationType\": \"02\",\n      \"email\": \"test@validation.com\"\n    },\n    \"receiver\": {\n      \"name\": \"Test Client Validation\",\n      \"identification\": \"987654321\",\n      \"identificationType\": \"01\",\n      \"email\": \"client@test.com\"\n    },\n    \"serviceDetail\": [\n      {\n        \"lineNumber\": 1,\n        \"code\": \"TEST-001\",\n        \"description\": \"Test Validation Service\",\n        \"quantity\": 1,\n        \"unitOfMeasure\": \"Unit\",\n        \"unitPrice\": 100.00,\n        \"totalAmount\": 100.00,\n        \"discount\": 0.00,\n        \"discountNature\": \"No discount\",\n        \"subtotal\": 100.00,\n        \"tax\": {\n          \"code\": \"01\",\n          \"rateCode\": \"08\",\n          \"rate\": 13.00,\n          \"amount\": 13.00\n        },\n        \"totalLineAmount\": 113.00\n      }\n    ],\n    \"invoiceSummary\": {\n      \"totalTaxableServices\": 100.00,\n      \"totalExemptServices\": 0.00,\n      \"totalTaxableGoods\": 0.00,\n      \"totalExemptGoods\": 0.00,\n      \"totalTaxable\": 100.00,\n      \"totalExempt\": 0.00,\n      \"totalSale\": 100.00,\n      \"totalDiscounts\": 0.00,\n      \"totalNetSale\": 100.00,\n      \"totalTax\": 13.00,\n      \"totalInvoice\": 113.00\n    }\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/validate",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"validate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send Invoice to Tax Administration",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Send operation successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.status).to.exist;",
+							"    pm.expect(jsonData.receiptNumber).to.exist;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"key\": \"{{test_key}}\",\n  \"consecutive\": \"{{test_consecutive}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/send",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"send"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Query Invoice by Consecutive",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 or 404\", function () {",
+							"    pm.expect([200, 404]).to.include(pm.response.code);",
+							"});",
+							"",
+							"pm.test(\"Response structure is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData).to.have.property('found');",
+							"    ",
+							"    if (jsonData.found) {",
+							"        pm.expect(jsonData).to.have.property('content');",
+							"        pm.expect(jsonData.language).to.eql('english');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/{{test_consecutive}}?includeContent=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"{{test_consecutive}}"
+					],
+					"query": [
+						{
+							"key": "includeContent",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Query Invoice without Content",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/{{test_consecutive}}?includeContent=false",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"{{test_consecutive}}"
+					],
+					"query": [
+						{
+							"key": "includeContent",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Invoices",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"List response structure is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData).to.have.property('pagination');",
+							"    pm.expect(jsonData).to.have.property('invoices');",
+							"    pm.expect(jsonData.metadata.language).to.eql('english');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices?status=all&limit=20&offset=0&includeContent=false",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "all"
+						},
+						{
+							"key": "limit",
+							"value": "20"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "includeContent",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Sent Invoices with Content",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices?status=sent&limit=10&offset=0&includeContent=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "sent"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "includeContent",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Issue Credit Note",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"documentType\": \"03\",\n  \"currencyCode\": \"USD\",\n  \"exchangeRate\": 650.00,\n  \"issuer\": {\n    \"name\": \"Digital Services Corporation\",\n    \"identification\": \"888999000\",\n    \"identificationType\": \"02\",\n    \"email\": \"billing@digitalservices.com\",\n    \"phone\": \"+1-555-0400\",\n    \"countryCode\": \"US\",\n    \"province\": \"01\",\n    \"canton\": \"01\",\n    \"district\": \"01\",\n    \"address\": \"654 Digital Plaza, Suite 300\"\n  },\n  \"receiver\": {\n    \"name\": \"Corporación de Desarrollo Empresarial\",\n    \"identification\": \"310987654321\",\n    \"identificationType\": \"02\",\n    \"email\": \"finanzas@cde.cr\",\n    \"phone\": \"+506-2233-4455\"\n  },\n  \"serviceDetail\": [\n    {\n      \"lineNumber\": 1,\n      \"code\": \"CREDIT-ADJ-001\",\n      \"description\": \"Credit adjustment - Overcharged marketing services in November 2025\",\n      \"quantity\": 1,\n      \"unitOfMeasure\": \"Unit\",\n      \"unitPrice\": -500.00,\n      \"totalAmount\": -500.00,\n      \"discount\": 0.00,\n      \"discountNature\": \"No discount applied\",\n      \"subtotal\": -500.00,\n      \"tax\": {\n        \"code\": \"01\",\n        \"rateCode\": \"08\",\n        \"rate\": 13.00,\n        \"amount\": -65.00\n      },\n      \"totalLineAmount\": -565.00\n    }\n  ],\n  \"invoiceSummary\": {\n    \"totalTaxableServices\": -500.00,\n    \"totalExemptServices\": 0.00,\n    \"totalTaxableGoods\": 0.00,\n    \"totalExemptGoods\": 0.00,\n    \"totalTaxable\": -500.00,\n    \"totalExempt\": 0.00,\n    \"totalSale\": -500.00,\n    \"totalDiscounts\": 0.00,\n    \"totalNetSale\": -500.00,\n    \"totalTax\": -65.00,\n    \"totalInvoice\": -565.00\n  },\n  \"saleCondition\": \"01\",\n  \"creditTerm\": \"0\",\n  \"observations\": \"Credit note for invoice correction. Billing adjustment approved by management on November 6, 2025.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/issue",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"issue"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Invalid Invoice (Validation Error)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Validation errors are returned\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.error).to.exist;",
+							"    pm.expect(jsonData.details).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"documentType\": \"01\",\n  \"currencyCode\": \"\",\n  \"issuer\": {\n    \"name\": \"\",\n    \"identification\": \"invalid_id\",\n    \"identificationType\": \"99\"\n  },\n  \"receiver\": {\n    \"name\": \"\",\n    \"identification\": \"\"\n  },\n  \"serviceDetail\": [],\n  \"invoiceSummary\": {}\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/issue",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"issue"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Invalid Validation Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error explains missing parameters\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include('key and consecutive');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"invalidField\": \"test\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/validate",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"validate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Invalid Consecutive Format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error explains invalid consecutive format\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include('20 digits');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/en/invoices/invalid123",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"en",
+						"invoices",
+						"invalid123"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set base URL if not already set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:3000');",
+					"}",
+					"",
+					"// Log request details for debugging",
+					"console.log('Request URL:', pm.request.url);",
+					"console.log('Request Method:', pm.request.method);",
+					"",
+					"// Add timestamp to requests",
+					"pm.request.headers.add({",
+					"    key: 'X-Request-Timestamp',",
+					"    value: new Date().toISOString()",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test for response time",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Global test for content type",
+					"pm.test('Content-Type is application/json', function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});",
+					"",
+					"// Log response for debugging",
+					"console.log('Response Status:', pm.response.status);",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "test_consecutive",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "product_consecutive",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "product_key",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
